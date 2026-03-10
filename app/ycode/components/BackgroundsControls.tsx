@@ -58,7 +58,7 @@ const BG_IMAGE_PROPS = ['backgroundImage', 'backgroundSize', 'backgroundPosition
 
 const isTextLayer = (layer: Layer | null): boolean => {
   if (!layer) return false;
-  return layer.name === 'text';
+  return layer.name === 'heading' || layer.name === 'text';
 };
 
 export default function BackgroundsControls({ layer, onLayerUpdate, activeTextStyleKey, fieldGroups, allFields, collections }: BackgroundsControlsProps) {

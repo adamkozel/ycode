@@ -1858,35 +1858,37 @@ const CenterCanvas = React.memo(function CenterCanvas({
       {/* Text Editor Toolbar - shown when editing text */}
       {isTextEditing && !isPreviewMode && (
         <div className="absolute top-0 h-16.25 left-0 right-0 z-50 flex items-center justify-center gap-2 px-4 bg-background border-b">
-          {/* Heading/Paragraph Dropdown */}
-          <Select
-            value={
-              textEditorActiveMarks.headingLevel
-                ? `h${textEditorActiveMarks.headingLevel}`
-                : 'paragraph'
-            }
-            onValueChange={(value) => {
-              if (value === 'paragraph') {
-                setHeading(null);
-              } else {
-                const level = parseInt(value.replace('h', '')) as 1 | 2 | 3 | 4 | 5 | 6;
-                setHeading(level);
+          {/* Heading/Paragraph Dropdown - hidden for heading and text elements (they use the Tag selector in the sidebar) */}
+          {selectedLayerName !== 'heading' && selectedLayerName !== 'text' && (
+            <Select
+              value={
+                textEditorActiveMarks.headingLevel
+                  ? `h${textEditorActiveMarks.headingLevel}`
+                  : 'paragraph'
               }
-            }}
-          >
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="paragraph">Paragraph</SelectItem>
-              <SelectItem value="h1">Heading 1</SelectItem>
-              <SelectItem value="h2">Heading 2</SelectItem>
-              <SelectItem value="h3">Heading 3</SelectItem>
-              <SelectItem value="h4">Heading 4</SelectItem>
-              <SelectItem value="h5">Heading 5</SelectItem>
-              <SelectItem value="h6">Heading 6</SelectItem>
-            </SelectContent>
-          </Select>
+              onValueChange={(value) => {
+                if (value === 'paragraph') {
+                  setHeading(null);
+                } else {
+                  const level = parseInt(value.replace('h', '')) as 1 | 2 | 3 | 4 | 5 | 6;
+                  setHeading(level);
+                }
+              }}
+            >
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="paragraph">Paragraph</SelectItem>
+                <SelectItem value="h1">Heading 1</SelectItem>
+                <SelectItem value="h2">Heading 2</SelectItem>
+                <SelectItem value="h3">Heading 3</SelectItem>
+                <SelectItem value="h4">Heading 4</SelectItem>
+                <SelectItem value="h5">Heading 5</SelectItem>
+                <SelectItem value="h6">Heading 6</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
 
           {/* Link Button */}
           {textEditor && (() => {

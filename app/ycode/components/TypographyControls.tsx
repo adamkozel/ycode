@@ -232,9 +232,9 @@ export default function TypographyControls({ layer, onLayerUpdate, activeTextSty
     debouncedUpdateDesignProperty('typography', 'underlineOffset', sanitized || null);
   };
 
-  // Check if the layer is an icon or text
+  // Check if the layer is an icon or text-content element
   const isIcon = layer?.name === 'icon';
-  const isText = layer?.name === 'text';
+  const isText = layer?.name === 'heading' || layer?.name === 'text';
 
   const bgImageRef = useRef<TextBackgroundImageTabHandle>(null);
   const handleImageActivate = useCallback(() => bgImageRef.current?.activate(), []);

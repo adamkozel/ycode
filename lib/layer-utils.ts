@@ -441,6 +441,15 @@ export function isTextEditable(layer: Layer): boolean {
 }
 
 /**
+ * Check if a layer is a text-content layer (heading or text).
+ * Use this for checks that should apply to both headings and text elements,
+ * such as showing typography controls, text content editing, etc.
+ */
+export function isTextContentLayer(layer: Layer): boolean {
+  return layer.name === 'heading' || layer.name === 'text';
+}
+
+/**
  * Get the HTML tag name for a layer
  */
 export function getHtmlTag(layer: Layer): string {
@@ -601,7 +610,7 @@ export function canHaveChildren(layer: Layer, childLayerType?: string): boolean 
 
   const blocksWithoutChildren = [
     'icon', 'image', 'audio', 'video', 'iframe',
-    'text', 'span', 'label', 'hr',
+    'heading', 'text', 'span', 'label', 'hr',
     'input', 'textarea', 'select', 'checkbox', 'radio',
     'htmlEmbed',
   ];
@@ -991,7 +1000,10 @@ export function getLayerIcon(
     return 'database';
   }
 
-  // Text layers
+  // Heading layers
+  if (layer.name === 'heading') return 'heading';
+
+  // Text layers (backward compat: text with h1-h6 tag still shows heading icon)
   if (layer.name === 'text') {
     return ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(layer.settings?.tag || '') ? 'heading' : 'text';
   }
@@ -1091,6 +1103,11 @@ export function getLayerHtmlTag(layer: Layer): string {
 
   if (layer.settings?.tag) {
     return layer.settings.tag;
+  }
+
+  // Heading layers default to h2 when no tag is set
+  if (layer.name === 'heading') {
+    return 'h2';
   }
 
   // Slider sub-layers always render as divs

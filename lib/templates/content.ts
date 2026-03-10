@@ -10,9 +10,9 @@ export const contentTemplates: Record<string, BlockTemplate> = {
     icon: 'heading',
     name: 'Heading',
     template: {
-      name: 'text',
+      name: 'heading',
       settings: {
-        tag: 'h1',
+        tag: 'h2',
       },
       classes: ['text-[48px]', 'font-[700]', 'leading-[1.1]', 'tracking-[-0.01em]'],
       restrictions: { editText: true },

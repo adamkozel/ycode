@@ -92,8 +92,8 @@ function getLayerDisplayLabel(
     return layer.customName;
   }
 
-  // For text layers, try to show the actual text content
-  if (layer.name === 'text' && layer.variables?.text) {
+  // For text-content layers (heading and text), show the actual text content
+  if ((layer.name === 'heading' || layer.name === 'text') && layer.variables?.text) {
     const textVar = layer.variables.text as { type: string; data?: { content?: any } };
 
     let textContent = '';

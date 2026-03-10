@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
@@ -88,8 +89,8 @@ import { isFieldVariable, getCollectionVariable, findParentCollectionLayer, find
 import { detachSpecificLayerFromComponent } from '@/lib/component-utils';
 import { convertContentToValue, parseValueToContent } from '@/lib/cms-variables-utils';
 import { createTextComponentVariableValue } from '@/lib/variable-utils';
-import { getRichTextValue } from '@/lib/tiptap-utils';
-import { DEFAULT_TEXT_STYLES, getTextStyle } from '@/lib/text-format-utils';
+import { getRichTextValue, extractPlainTextFromTiptap } from '@/lib/tiptap-utils';
+import { DEFAULT_TEXT_STYLES, getTextStyle, getTiptapTextContent } from '@/lib/text-format-utils';
 import { buildFieldGroupsForLayer, getFieldIcon, isMultipleAssetField, MULTI_ASSET_COLLECTION_ID } from '@/lib/collection-field-utils';
 import { getInverseReferenceFields } from '@/lib/collection-utils';
 
@@ -407,9 +408,12 @@ const RightSidebar = React.memo(function RightSidebar({
   // Helper function to check if layer is a heading
   const isHeadingLayer = (layer: Layer | null): boolean => {
     if (!layer) return false;
-    const headingTags = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'heading'];
-    return headingTags.includes(layer.name || '') ||
-           headingTags.includes(layer.settings?.tag || '');
+    if (layer.name === 'heading') return true;
+    // Backward compat: text layers with h1-h6 tag
+    if (layer.name === 'text') {
+      return ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(layer.settings?.tag || '');
+    }
+    return false;
   };
 
   // Helper function to check if layer is a container/section/block
@@ -424,10 +428,10 @@ const RightSidebar = React.memo(function RightSidebar({
            containerTags.includes(layer.settings?.tag || '');
   };
 
-  // Helper function to check if layer is a text element
+  // Helper function to check if layer is a text-content element (heading or text)
   const isTextLayer = (layer: Layer | null): boolean => {
     if (!layer) return false;
-    return layer.name === 'text';
+    return layer.name === 'heading' || layer.name === 'text';
   };
 
   // Helper function to check if layer is a button element
@@ -575,20 +579,25 @@ const RightSidebar = React.memo(function RightSidebar({
   const getDefaultTextTag = (layer: Layer | null): string => {
     if (!layer) return 'p';
     if (layer.settings?.tag) return layer.settings.tag;
-    return 'p'; // Default to p
+    if (layer.name === 'heading') return 'h2';
+    return 'p';
   };
 
-  // Text tag options with labels
+  // Tag options for heading elements (h1-h6)
+  const headingTagOptions = [
+    { value: 'h1', label: 'h1' },
+    { value: 'h2', label: 'h2' },
+    { value: 'h3', label: 'h3' },
+    { value: 'h4', label: 'h4' },
+    { value: 'h5', label: 'h5' },
+    { value: 'h6', label: 'h6' },
+  ] as const;
+
+  // Tag options for text elements (p, span, label)
   const textTagOptions = [
-    { value: 'h1', label: 'Heading 1' },
-    { value: 'h2', label: 'Heading 2' },
-    { value: 'h3', label: 'Heading 3' },
-    { value: 'h4', label: 'Heading 4' },
-    { value: 'h5', label: 'Heading 5' },
-    { value: 'h6', label: 'Heading 6' },
-    { value: 'p', label: 'Paragraph' },
-    { value: 'span', label: 'Span' },
-    { value: 'label', label: 'Label' },
+    { value: 'p', label: 'p' },
+    { value: 'span', label: 'span' },
+    { value: 'label', label: 'label' },
   ] as const;
 
   // Classes input state (synced with selectedLayer)
@@ -1949,36 +1958,39 @@ const RightSidebar = React.memo(function RightSidebar({
                 </div>
               )}
 
-              {/* Text Tag Selector - Only for text layers (not containers) */}
-              {selectedLayer?.name === 'text' && !isContainerLayer(selectedLayer) && (
-                <div className="grid grid-cols-3">
-                  <Label variant="muted">Tag</Label>
-                  <div className="col-span-2 *:w-full">
-                    <Select value={textTag} onValueChange={handleTextTagChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select...">
-                          {textTag && (() => {
-                            const option = textTagOptions.find(opt => opt.value === textTag);
-                            return option ? option.label : textTag;
-                          })()}
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          {textTagOptions.map((option) => (
-                            <SelectItem
-                              key={option.value}
-                              value={option.value}
-                            >
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
+              {/* Tag Selector - For heading and text layers */}
+              {(selectedLayer?.name === 'heading' || (selectedLayer?.name === 'text' && !isContainerLayer(selectedLayer))) && (() => {
+                const tagOptions = selectedLayer?.name === 'heading' ? headingTagOptions : textTagOptions;
+                return (
+                  <div className="grid grid-cols-3">
+                    <Label variant="muted">Tag</Label>
+                    <div className="col-span-2 *:w-full">
+                      <Select value={textTag} onValueChange={handleTextTagChange}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select...">
+                            {textTag && (() => {
+                              const option = tagOptions.find(opt => opt.value === textTag);
+                              return option ? option.label : textTag;
+                            })()}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            {tagOptions.map((option) => (
+                              <SelectItem
+                                key={option.value}
+                                value={option.value}
+                              >
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
             </div>
 
             {/* Content Panel - show for text-editable layers */}
@@ -2072,11 +2084,22 @@ const RightSidebar = React.memo(function RightSidebar({
                           </div>
                         </Button>
                       ) : (isTextEditingOnCanvas && editingLayerIdOnCanvas === selectedLayerId) ? (
-                        // Don't render RichTextEditor while canvas text editor is active
-                        // to prevent race conditions when saving
                         <Empty className="min-h-8 py-2">
                           <EmptyDescription>You are editing the text directly on canvas.</EmptyDescription>
                         </Empty>
+                      ) : isTextLayer(selectedLayer) ? (
+                        <Textarea
+                          key={selectedLayerId}
+                          defaultValue={(() => {
+                            const val = getContentValue(selectedLayer);
+                            if (val && typeof val === 'object') return extractPlainTextFromTiptap(val);
+                            return typeof val === 'string' ? val : '';
+                          })()}
+                          onChange={(e) => handleContentChange(getTiptapTextContent(e.target.value))}
+                          placeholder="Enter text..."
+                          className="min-h-8 resize-y"
+                          rows={1}
+                        />
                       ) : (
                         <ExpandableRichTextEditor
                           key={selectedLayerId}
