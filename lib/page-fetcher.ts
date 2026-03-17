@@ -368,9 +368,6 @@ export const fetchPageByPath = cache(async function fetchPageByPath(
         }
 
         if (extractedSlug) {
-          // Found a matching dynamic page pattern
-          matchingPage = dynamicPage;
-
           // Fetch the collection item by slug value (supports translated slugs)
           const cmsSettings = dynamicPage.settings?.cms;
           if (cmsSettings?.collection_id && cmsSettings?.slug_field_id) {
@@ -393,9 +390,12 @@ export const fetchPageByPath = cache(async function fetchPageByPath(
             );
 
             if (!collectionItem) {
-              // Collection item not found for this slug
-              return null;
+              // Slug doesn't belong to this dynamic page's collection — try next
+              continue;
             }
+
+            // Found the matching dynamic page
+            matchingPage = dynamicPage;
 
             // Get layers for the dynamic page
             const { data: pageLayers, error: layersError } = await supabase
