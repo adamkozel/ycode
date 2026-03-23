@@ -58,6 +58,8 @@ export interface RichTextLinkSettingsProps {
   layer?: Layer | null;
   /** Link types to exclude from the dropdown */
   excludedLinkTypes?: LinkType[];
+  /** Hide "Current page item" and "Reference field" options (e.g. when editing CMS item content) */
+  hidePageContextOptions?: boolean;
 }
 
 /**
@@ -72,6 +74,7 @@ export default function RichTextLinkSettings({
   isInsideCollectionLayer = false,
   layer,
   excludedLinkTypes = [],
+  hidePageContextOptions = false,
 }: RichTextLinkSettingsProps) {
   const [collectionItems, setCollectionItems] = useState<CollectionItemWithValues[]>([]);
   const [loadingItems, setLoadingItems] = useState(false);
@@ -176,10 +179,11 @@ export default function RichTextLinkSettings({
   const currentPage = currentPageId ? pages.find(p => p.id === currentPageId) : null;
   const isCurrentPageDynamic = currentPage?.is_dynamic || false;
 
-  // "Current page item" only makes sense when both pages use the same collection
+  // "Current page item" only makes sense when both pages use the same collection,
+  // and is never relevant when editing CMS item content directly
   const currentPageCollectionId = currentPage?.settings?.cms?.collection_id || null;
   const targetPageCollectionId = selectedPage?.settings?.cms?.collection_id || null;
-  const canUseCurrentPageItem = isDynamicPage && isCurrentPageDynamic
+  const canUseCurrentPageItem = !hidePageContextOptions && isDynamicPage && isCurrentPageDynamic
     && !!currentPageCollectionId && currentPageCollectionId === targetPageCollectionId;
 
   // Check if the layer itself is a collection layer
@@ -203,10 +207,11 @@ export default function RichTextLinkSettings({
   const hasCollectionFields = !!(collectionGroup && collectionGroup.fields.length > 0 && isInsideCollectionLayer);
   const canUseCurrentCollectionItem = hasCollectionFields || isCollectionLayer;
 
-  // Find reference fields that point to the target page's collection
+  // Find reference fields that point to the target page's collection.
+  // Hidden when editing CMS item content directly (no page context).
   const referenceItemOptions = useMemo(
-    () => buildReferenceItemOptions(isDynamicPage, targetPageCollectionId, fieldGroups),
-    [isDynamicPage, targetPageCollectionId, fieldGroups]
+    () => hidePageContextOptions ? [] : buildReferenceItemOptions(isDynamicPage, targetPageCollectionId, fieldGroups),
+    [hidePageContextOptions, isDynamicPage, targetPageCollectionId, fieldGroups]
   );
 
   // Get collection ID from dynamic page settings
