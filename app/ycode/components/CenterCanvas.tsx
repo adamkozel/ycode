@@ -551,6 +551,7 @@ const CenterCanvas = React.memo(function CenterCanvas({
   const hoveredLayerId = useEditorStore((state) => state.hoveredLayerId);
   const setHoveredLayerId = useEditorStore((state) => state.setHoveredLayerId);
   const isPreviewMode = useEditorStore((state) => state.isPreviewMode);
+  const activeSidebarTab = useEditorStore((state) => state.activeSidebarTab);
   const activeInteractionTriggerLayerId = useEditorStore((state) => state.activeInteractionTriggerLayerId);
   const richTextSheetLayerId = useEditorStore((state) => state.richTextSheetLayerId);
   const closeRichTextSheet = useEditorStore((state) => state.closeRichTextSheet);
@@ -2245,7 +2246,7 @@ const CenterCanvas = React.memo(function CenterCanvas({
         )}
 
         {/* Selection overlay - renders outlines on top of the iframe */}
-        {!isPreviewMode && canvasIframeElement && (
+        {!isPreviewMode && activeSidebarTab !== 'pages' && canvasIframeElement && (
           <SelectionOverlay
             iframeElement={canvasIframeElement}
             containerElement={scrollContainerRef.current}
