@@ -419,8 +419,8 @@ export function CSVImportDialog({
               </div>
 
               <p className="text-xs text-muted-foreground">
-                Once the import starts, please do not close this dialog or
-                reload the page as it will stop the importing process.
+                Once the import starts, please do not reload the page as it would
+                prevent the import from processing remaining rows in the uploaded CSV file.
               </p>
             </div>
 
@@ -446,9 +446,9 @@ export function CSVImportDialog({
         {step === 'progress' && (
           <>
             <DialogHeader>
-              <DialogTitle>Importing data</DialogTitle>
+              <DialogTitle>Importing data...</DialogTitle>
               <DialogDescription>
-                Please do not close this dialog or reload the page.
+                Please wait, do not reload this page.
               </DialogDescription>
             </DialogHeader>
 
