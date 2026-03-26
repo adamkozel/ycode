@@ -49,6 +49,7 @@ import {
   COMPARE_OPERATORS,
   DATE_PRESET_OPTIONS,
   isDatePreset,
+  isDateFieldType,
 } from '@/lib/collection-field-utils';
 import { getCollectionVariable, isInputInsideFilter, resolveFilterInputId, findLayerById } from '@/lib/layer-utils';
 import { useEditorStore } from '@/stores/useEditorStore';
@@ -669,7 +670,7 @@ export default function CollectionFiltersSettings({
                           </SelectGroup>
                         </SelectContent>
                       </Select>
-                    ) : fieldType === 'date' ? (
+                    ) : isDateFieldType(fieldType) ? (
                       <div className="flex flex-col gap-1.5">
                         <Select
                           value={isDatePreset(condition.value) ? condition.value : (condition.value ? '_custom' : '')}
