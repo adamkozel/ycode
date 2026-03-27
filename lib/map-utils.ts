@@ -7,7 +7,7 @@
 
 import type { MapSettings, MapStyle } from '@/types';
 
-const MAPBOX_GL_VERSION = 'v3.9.4';
+const MAPBOX_GL_VERSION = 'v3.20.0';
 const MAPBOX_CDN_BASE = `https://cdn.jsdelivr.net/npm/mapbox-gl@${MAPBOX_GL_VERSION}/dist`;
 
 const STYLE_URLS: Record<MapStyle, string> = {
