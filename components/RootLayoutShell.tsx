@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
 import DarkModeProvider from '@/components/DarkModeProvider';
 
 const inter = Inter({
@@ -29,6 +30,7 @@ export default function RootLayoutShell({ children, headElements }: RootLayoutSh
         <DarkModeProvider>
           {children}
         </DarkModeProvider>
+        <Analytics />
       </body>
     </html>
   );
